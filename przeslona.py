@@ -41,15 +41,17 @@ def liczba_sasiadow(a_otworu, b_otworu, lambda_):
         a_otworu, b_otworu = b_otworu, a_otworu
 
     d = int(np.floor(((lambda_) + odl_otworow) / (a_otworu + odl_otworow)))
-    return d
+    return d - 1
 
 print(f'Liczba sąsiadujących otworów: {liczba_sasiadow(a_otworu, b_otworu, lambda_)}')
 
 def skut_ekranowania(a_otworu, lambda_):
 
     n = liczba_sasiadow(a_otworu, b_otworu, lambda_)
-
-    S = 20*np.log10(lambda_/(2*a_otworu)) - 20*np.log10(n**0.5)
+    if n == 0:
+        S = 20*np.log10(lambda_/(2*a_otworu))
+    else:
+        S = 20*np.log10(lambda_/(2*a_otworu)) - 20*np.log10(n**0.5)
     return S
 
 a_otworu_range = [i for i in np.arange(0.01, lambda_/2, 0.01)]
