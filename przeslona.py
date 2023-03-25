@@ -14,10 +14,14 @@ bok_plyty = 50 # [cm]
 
 min_skut_ekran = 15 # [dB]
 
-a_otworu = lambda_/2 # [m]
-b_otworu = a_otworu/2 # [m]
-
 odl_otworow = lambda_/10 # [m]
+
+podst_range = [i for i in np.arange(0.01, lambda_/2, 0.01)]
+# b_otworu_range = [i for i in np.arange(lambda_/2, 0.01, -0.01)]
+odl_otworu_range = [i for i in np.arange(lambda_/10, lambda_/2, 0.01)]
+
+podst = lambda_/2 # [m]
+b_otworu = ((5**0.5)/2) * podst # [m]
 
 print(f'lambda: {lambda_}')
 
@@ -27,46 +31,43 @@ print(f'lambda: {lambda_}')
 # Maksymalna długość liniowa otworu = lambda/2
 # Minimalna odległość otworów = lambda/10
 
-# Skuteczność ekranowania dla jednego otworu
-print(lambda_/(2*a_otworu))
 
-def skut_jednej_dziury(a_otworu, b_otworu, lambda_):
-    if b_otworu > a_otworu:
-        a_otworu, b_otworu = b_otworu, a_otworu
-    S = 20*np.log10(lambda_/(2*a_otworu))
-    return S
+# Przymijmy proporcje trójkąta podstawa(b) = wysokość
+# oraz ustawienie między trójkątami takie że boki są równoległe
 
-def liczba_sasiadow(a_otworu, b_otworu, lambda_):
-    if b_otworu > a_otworu:
-        a_otworu, b_otworu = b_otworu, a_otworu
+h = podst 
 
-    d = int(np.floor(((lambda_) + odl_otworow) / (a_otworu + odl_otworow)))
-    return d - 1
+# def wys_otworu(podst):
+#     h = np.sqrt(podst**2 - (podst/2)**2)
+#     return h
 
-print(f'Liczba sąsiadujących otworów: {liczba_sasiadow(a_otworu, b_otworu, lambda_)}')
-
-def skut_ekranowania(a_otworu, lambda_):
-
-    n = liczba_sasiadow(a_otworu, b_otworu, lambda_)
-    if n == 0:
-        S = 20*np.log10(lambda_/(2*a_otworu))
+def liczba_sasiadow(podst, odl,  lambda_):
+    h = podst
+    d = int(np.floor(lambda_ / h + odl))
+    n = int(np.floor(lambda_ / (podst + odl - (podst/2))))
+    if n > d:
+        return n - 1
     else:
-        S = 20*np.log10(lambda_/(2*a_otworu)) - 20*np.log10(n**0.5)
+        return d - 1
+
+print(f'Liczba sąsiadujących otworów: {liczba_sasiadow(podst, b_otworu, lambda_)}')
+
+def skut_ekranowania(podst, lambda_):
+
+    n = liczba_sasiadow(podst, b_otworu, lambda_)
+    if n == 0:
+        S = 20*np.log10(lambda_/(2*podst))
+    else:
+        S = 20*np.log10(lambda_/(2*podst)) - 20*np.log10(n**0.5)
     return S
 
-a_otworu_range = [i for i in np.arange(0.01, lambda_/2, 0.01)]
-# b_otworu_range = [i for i in np.arange(lambda_/2, 0.01, -0.01)]
-odl_otworu_range = [i for i in np.arange(lambda_/10, lambda_/2, 0.01)]
-
-def wys_otworu(a_otworu):
-    h = np.sqrt(a_otworu**2 - (a_otworu/2)**2)
-    return h
     
-def pole_otworu(a_otworu=a_otworu):
-    P = 0.5*(a_otworu/2)*wys_otworu(a_otworu)
+def pole_otworu(podst=podst):
+    h = podst
+    P = 0.5*(podst/2)*h
     return P
 
-print(f'a_otworu: {a_otworu}\nPole otworu: {pole_otworu(a_otworu)}')
+print(f'podst: {podst}\nPole otworu: {pole_otworu(podst)}')
 
 def liczba_otworow_wiersz(bok_plyty, b_otworu, odl_otworu):
     n = int(np.floor((bok_plyty + odl_otworu) / (b_otworu + odl_otworu)))
@@ -76,20 +77,20 @@ def liczba_otworow_kolumn(bok_plyty, h, odl_otworu):
     n = int(np.floor((bok_plyty + odl_otworu) / (h + odl_otworu)))
     return n
 
-def czesc_pola_plyty(bok_plyty, a_otworu, h, odl_otworu):
-    P = ((liczba_otworow_wiersz(bok_plyty, a_otworu, odl_otworu)*liczba_otworow_kolumn(bok_plyty, h, odl_otworu)*pole_otworu(a_otworu))/(bok_plyty**2))*100
+def czesc_pola_plyty(bok_plyty, podst, h, odl_otworu):
+    P = ((liczba_otworow_wiersz(bok_plyty, podst, odl_otworu)*liczba_otworow_kolumn(bok_plyty, h, odl_otworu)*pole_otworu(podst))/(bok_plyty**2))*100
     return P
 
 print(f'Liczba otworów w wierszu: {liczba_otworow_wiersz(bok_plyty, b_otworu, odl_otworow)}')
-print(f'Liczba otworów w kolumnie: {liczba_otworow_kolumn(bok_plyty, wys_otworu(a_otworu), odl_otworow)}')
-print(f'Część pola płytki zajmowana przez otwory: {czesc_pola_plyty(bok_plyty, a_otworu, wys_otworu(a_otworu), odl_otworow)}')
+print(f'Liczba otworów w kolumnie: {liczba_otworow_kolumn(bok_plyty, wys_otworu(podst), odl_otworow)}')
+print(f'Część pola płytki zajmowana przez otwory: {czesc_pola_plyty(bok_plyty, podst, wys_otworu(podst), odl_otworow)}')
 
-def maximize_czesc_pola_plyty(a_otworu_range, odl_otworu, min_skut_ekranu):
+def maximize_czesc_pola_plyty(podst_range, odl_otworu, min_skut_ekranu):
     results = []
     good_results = []
     max_pole = 0
 
-    for idx, val in enumerate(a_otworu_range):
+    for idx, val in enumerate(podst_range):
         results.append((val, skut_ekranowania(val, lambda_), czesc_pola_plyty(bok_plyty, val, wys_otworu(val), odl_otworu)))
         if results[idx][1] > min_skut_ekranu:
             good_results.append((val, skut_ekranowania(val, lambda_), czesc_pola_plyty(bok_plyty, val, wys_otworu(val), odl_otworu)))
@@ -98,35 +99,35 @@ def maximize_czesc_pola_plyty(a_otworu_range, odl_otworu, min_skut_ekranu):
 
     return good_results, max_pole
 
-print(f'Wyniki: {maximize_czesc_pola_plyty(a_otworu_range, odl_otworow, min_skut_ekran)}')
+print(f'Wyniki: {maximize_czesc_pola_plyty(podst_range, odl_otworow, min_skut_ekran)}')
 
-def plot_skutecznosc_ekranowania(a_otworu_range, odl_otworu_range):
-    a_otworu_vals = np.linspace(a_otworu_range[0], a_otworu_range[1], 50)
+def plot_skutecznosc_ekranowania(podst_range, odl_otworu_range):
+    podst_vals = np.linspace(podst_range[0], podst_range[1], 50)
     odl_otworu_vals = np.linspace(odl_otworu_range[0], odl_otworu_range[1], 50)
-    skutecznosc_ekranowania = np.zeros((len(a_otworu_vals), len(odl_otworu_vals)))
+    skutecznosc_ekranowania = np.zeros((len(podst_vals), len(odl_otworu_vals)))
 
-    for i, a_otworu in enumerate(a_otworu_vals):
+    for i, podst in enumerate(podst_vals):
         for j, odl_otworu in enumerate(odl_otworu_vals):
-            b_otworu = a_otworu / 2
-            h = np.sqrt(a_otworu**2 - (a_otworu/2)**2)
-            skutecznosc_ekranowania[i,j] = skut_ekranowania(a_otworu, b_otworu, lambda_)
+            b_otworu = podst / 2
+            h = np.sqrt(podst**2 - (podst/2)**2)
+            skutecznosc_ekranowania[i,j] = skut_ekranowania(podst, b_otworu, lambda_)
 
-    plt.contourf(odl_otworu_vals, a_otworu_vals, skutecznosc_ekranowania, levels=20, cmap='coolwarm')
+    plt.contourf(odl_otworu_vals, podst_vals, skutecznosc_ekranowania, levels=20, cmap='coolwarm')
     plt.colorbar()
     plt.xlabel('odl_otworu')
-    plt.ylabel('a_otworu')
+    plt.ylabel('podst')
     plt.title('Skutecznosc ekranowania')
     plt.show()
 
 #     plt.scatter(results_arr[:, 0], results_arr[:, 1], c=results_arr[:, 2], cmap='viridis')
 #     plt.colorbar(label='odl_otworu')
-#     plt.xlabel('a_otworu')
+#     plt.xlabel('podst')
 #     plt.ylabel('b_otworu')
 #     plt.title('Skutecznosc ekranowania')
 #     plt.show()
 
-# plot_skutecznosc_ekranowania(a_otworu_range, odl_otworu_range)
+# plot_skutecznosc_ekranowania(podst_range, odl_otworu_range)
 
-# optimal_params, optimal_S = optymalizacja(a_otworu_range, b_otworu_range, odl_otworu_range, pole_plyty, min_skut_ekran)
+# optimal_params, optimal_S = optymalizacja(podst_range, b_otworu_range, odl_otworu_range, pole_plyty, min_skut_ekran)
 
 # print(f'Optymalne parametry: {optimal_params}\nOptymalna skuteczność ekranowania: {optimal_S}')
